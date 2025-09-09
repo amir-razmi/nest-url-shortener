@@ -1,0 +1,21 @@
+{
+  "name": "nest-url-shortener",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsx --watch src/index.ts",
+    "dev": "cross-env NODE_ENV=development tsc --watch src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amir-razmi/nest-url-shortener.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/amir-razmi/nest-url-shortener/issues"
+  },
+  "homepage": "https://github.com/amir-razmi/nest-url-shortener#readme"
+}
