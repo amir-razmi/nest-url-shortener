@@ -7,7 +7,7 @@ import { VERIFY_EMAIL_HTML, VERIFY_EMAIL_SUBJECT } from 'src/common/constants/em
 import { generateRandomString } from 'src/common/utils/gen-rand-string.util';
 import { RedisService } from 'src/common/redis/redis.service';
 import { VerifyEmailDto } from './dto/verify-email.dto';
-import { ResendVerificationEmail } from './dto/resend-verification-email.dto';
+import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
 import { LoginDto } from './dto/login.dto';
 import jwt from 'jsonwebtoken';
 import { env } from 'src/env';
@@ -64,7 +64,7 @@ export class AuthService {
 
     return { message: 'Email verified successfully.' };
   }
-  async resendVerificationEmail({ email }: ResendVerificationEmail) {
+  async resendVerificationEmail({ email }: ResendVerificationEmailDto) {
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -89,8 +89,8 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) throw new Error('Invalid credentials');
 
-    const authToken = jwt.sign({ userId: user.id }, env.JWT_SECRET, { expiresIn: '7d' });
+    const accessToken = jwt.sign({ userId: user.id }, env.JWT_SECRET, { expiresIn: '7d' });
 
-    return { authToken };
+    return { accessToken, message: 'Login successful' };
   }
 }
