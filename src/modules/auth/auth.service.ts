@@ -6,6 +6,7 @@ import { sendEmail } from 'src/common/utils/send-email.util';
 import { VERIFY_EMAIL_HTML, VERIFY_EMAIL_SUBJECT } from 'src/common/constants/email-context.constant';
 import { generateRandomString } from 'src/common/utils/gen-rand-string.util';
 import { RedisService } from 'src/common/redis/redis.service';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 
 @Injectable()
 export class AuthService {
@@ -39,5 +40,24 @@ export class AuthService {
     await this.redis.client.set(`verificationToken:${email}`, emailVerificationToken, 'EX', 60 * 30);
 
     await sendEmail(email, VERIFY_EMAIL_SUBJECT, VERIFY_EMAIL_HTML(username, emailVerificationToken));
+
+    return { message: 'Registration successful, please verify your email.' };
+  }
+  async verifyEmail({ email, token }: VerifyEmailDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (!user) throw new Error('User not found');
+    if (user.isEmailVerified) throw new Error('Email already verified');
+
+    const storedToken = await this.redis.client.get(`verificationToken:${email}`);
+    if (storedToken !== token) throw new Error('Invalid or expired token');
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { isEmailVerified: true },
+    });
+
+    return { message: 'Email verified successfully.' };
   }
 }
