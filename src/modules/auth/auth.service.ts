@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
-import { hash } from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { sendEmail } from 'src/common/utils/send-email.util';
 import { VERIFY_EMAIL_HTML, VERIFY_EMAIL_SUBJECT } from 'src/common/constants/email-context.constant';
 import { generateRandomString } from 'src/common/utils/gen-rand-string.util';
 import { RedisService } from 'src/common/redis/redis.service';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationEmail } from './dto/resend-verification-email.dto';
+import { LoginDto } from './dto/login.dto';
+import jwt from 'jsonwebtoken';
+import { env } from 'src/env';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +31,7 @@ export class AuthService {
 
     if (isEmailTaken && isEmailTaken.isEmailVerified) throw new Error('Email already taken');
 
-    const hashedPassword = await hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     await this.prisma.user.upsert({
       where: { email },
@@ -75,5 +78,19 @@ export class AuthService {
     await sendEmail(email, VERIFY_EMAIL_SUBJECT, VERIFY_EMAIL_HTML(user.username, emailVerificationToken));
 
     return { message: 'Verification email resent successfully.' };
+  }
+  async login({ email, password }: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (!user) throw new Error('Invalid credentials');
+    if (!user.isEmailVerified) throw new Error('Email not verified');
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) throw new Error('Invalid credentials');
+
+    const authToken = jwt.sign({ userId: user.id }, env.JWT_SECRET, { expiresIn: '7d' });
+
+    return { authToken };
   }
 }
