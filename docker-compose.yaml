@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   server:
@@ -7,12 +7,16 @@ services:
       dockerfile: ./Dockerfile
     env_file: ./.env
     depends_on:
-      - mongodb-primary
-      - mongodb-secondary
-      - mongodb-arbiter
-      - redis
+      mongodb-primary:
+        condition: service_healthy
+      mongodb-secondary:
+        condition: service_healthy
+      mongodb-arbiter:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
-      - "${PORT}:${PORT}"
+      - '${PORT}:${PORT}'
 
   mongodb-primary:
     image: bitnami/mongodb:6.0.4-debian-11-r11
@@ -20,6 +24,9 @@ services:
     environment:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-primary
       - MONGODB_REPLICA_SET_MODE=primary
+      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
+      - MONGODB_PRIMARY_HOST=mongodb-primary
+      - MONGODB_PRIMARY_PORT_NUMBER=27017
       - MONGODB_REPLICA_SET_NAME
       - MONGODB_DATABASE
       - MONGODB_USERNAME
@@ -27,11 +34,13 @@ services:
       - MONGODB_ROOT_USER
       - MONGODB_ROOT_PASSWORD
       - MONGODB_REPLICA_SET_KEY
-      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
-      - MONGODB_PRIMARY_HOST=mongodb-primary
-      - MONGODB_PRIMARY_PORT_NUMBER=27017
     volumes:
-      - "mongodata:/bitnami"
+      - 'mongodata:/bitnami'
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   mongodb-secondary:
     image: bitnami/mongodb:6.0.4-debian-11-r11
@@ -43,12 +52,17 @@ services:
       - MONGODB_REPLICA_SET_MODE=secondary
       - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
       - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
+      - MONGODB_PRIMARY_HOST=mongodb-primary
+      - MONGODB_PRIMARY_PORT_NUMBER=27017
       - MONGODB_REPLICA_SET_NAME
       - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD
       - MONGODB_REPLICA_SET_KEY
       - MONGODB_INITIAL_PRIMARY_ROOT_USER
-      - MONGODB_PRIMARY_HOST=mongodb-primary
-      - MONGODB_PRIMARY_PORT_NUMBER=27017
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   mongodb-arbiter:
     image: bitnami/mongodb:6.0.4-debian-11-r11
@@ -60,17 +74,28 @@ services:
       - MONGODB_REPLICA_SET_MODE=arbiter
       - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
       - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
+      - MONGODB_PRIMARY_HOST=mongodb-primary
+      - MONGODB_PRIMARY_PORT_NUMBER=27017
       - MONGODB_REPLICA_SET_NAME
       - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD
       - MONGODB_REPLICA_SET_KEY
       - MONGODB_INITIAL_PRIMARY_ROOT_USER
-      - MONGODB_PRIMARY_HOST=mongodb-primary
-      - MONGODB_PRIMARY_PORT_NUMBER=27017
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   redis:
-    image: "bitnami/redis:7.4.2"
+    image: 'bitnami/redis:7.4.2'
     environment:
       - REDIS_PASSWORD
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
 
 volumes:
   mongodata:
