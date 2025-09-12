@@ -32,25 +32,25 @@ export class AuthController {
   async login(@Body() body: LoginDto, @Res() res: Response) {
     const { accessToken, ...data } = await this.authService.login(body);
 
-    res.cookie('auth-Token', accessToken, {
+    res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    return data;
+    return res.json(data);
   }
 
   @Post('logout')
   logout(@Res() res: Response) {
-    res.cookie('auth-Token', '', {
+    res.cookie('accessToken', '', {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
       maxAge: 1, // 7 days
     });
 
-    return { message: 'Logged out successfully' };
+    return res.json({ message: 'Logged out successfully' });
   }
 }
