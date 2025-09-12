@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
 import { VERIFY_EMAIL_HTML, VERIFY_EMAIL_SUBJECT } from 'src/common/constants/email-context.constant';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { RedisService } from 'src/common/redis/redis.service';
-import { generateAccessToken } from 'src/common/utils/gen-access-token.util';
 import { generateRandomString } from 'src/common/utils/gen-rand-string.util';
 import { sendEmail } from 'src/common/utils/send-email.util';
 import { LoginDto } from './dto/login.dto';
@@ -16,6 +16,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private redis: RedisService,
+    private jwtService: JwtService,
   ) {}
 
   async register({ email, password, username }: RegisterDto) {
@@ -97,7 +98,7 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) throw new Error('Invalid credentials');
 
-    const accessToken = generateAccessToken(user.id);
+    const accessToken = await this.jwtService.signAsync({ userId: user.id });
 
     return { accessToken, message: 'Login successful' };
   }
