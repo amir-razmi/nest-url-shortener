@@ -58,4 +58,11 @@ export class UrlService {
 
     return { urls, totalUrls, pagesCount };
   }
+  async getUrlByShortCode(shortCode: string) {
+    const url = await this.prisma.url.findUnique({
+      where: { shortCode },
+    });
+
+    return url;
+  }
 }
