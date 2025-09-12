@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, Get, Query, Req, UseInterceptors } from '@nestjs/common';
 import { type Request } from 'express';
 import { UserService } from './user.service';
 import { UserResponseDto } from './dto/user-response.dto';
@@ -15,6 +15,7 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @ApiOperation({ summary: 'Get the profile of the authenticated user' })
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get('profile')
   async getProfile(@Req() req: Request) {
     const user = await this.userService.getUserById(req.user.userId);
@@ -23,6 +24,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Get all users (Admin only)' })
   @AdminRoute()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get('all')
   async getAllUsers(@Query() query: PaginationDto) {
     const users = await this.userService.getAllUsers(query);

@@ -18,10 +18,6 @@ import { VisitModule } from './modules/visit/visit.module';
       provide: APP_GUARD,
       useClass: AdminGuard,
     },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ClassSerializerInterceptor,
-    },
   ],
   imports: [AuthModule, RedirectModule, UrlModule, UserModule, VisitModule],
 })
