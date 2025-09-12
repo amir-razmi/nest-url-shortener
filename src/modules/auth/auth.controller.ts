@@ -5,7 +5,9 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
 import { LoginDto } from './dto/login.dto';
 import { type Response } from 'express';
+import { PublicRoute } from 'src/common/decorators/public-route.decorator';
 
+@PublicRoute()
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
