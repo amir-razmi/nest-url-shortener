@@ -31,4 +31,15 @@ export class UrlService {
 
     return url;
   }
+  async deleteShortUrl(id: string, userId: string) {
+    const url = await this.prisma.url.findUnique({
+      where: { id },
+    });
+    if (!url) throw new Error('URL not found');
+    if (url.userId !== userId) throw new Error('You are not authorized to delete this URL');
+
+    await this.prisma.url.delete({
+      where: { id },
+    });
+  }
 }
