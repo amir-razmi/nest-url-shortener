@@ -1,0 +1,81 @@
+version: "3"
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file: ./.env
+    depends_on:
+      - mongodb-primary
+      - mongodb-secondary
+      - mongodb-arbiter
+      - redis
+    ports:
+      - "${PORT}:${PORT}"
+
+  mongodb-primary:
+    image: bitnami/mongodb:6.0.4-debian-11-r11
+    restart: always
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb-primary
+      - MONGODB_REPLICA_SET_MODE=primary
+      - MONGODB_REPLICA_SET_NAME
+      - MONGODB_DATABASE
+      - MONGODB_USERNAME
+      - MONGODB_PASSWORD
+      - MONGODB_ROOT_USER
+      - MONGODB_ROOT_PASSWORD
+      - MONGODB_REPLICA_SET_KEY
+      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
+      - MONGODB_PRIMARY_HOST=mongodb-primary
+      - MONGODB_PRIMARY_PORT_NUMBER=27017
+    volumes:
+      - "mongodata:/bitnami"
+
+  mongodb-secondary:
+    image: bitnami/mongodb:6.0.4-debian-11-r11
+    restart: always
+    depends_on:
+      - mongodb-primary
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary
+      - MONGODB_REPLICA_SET_MODE=secondary
+      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
+      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
+      - MONGODB_REPLICA_SET_NAME
+      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD
+      - MONGODB_REPLICA_SET_KEY
+      - MONGODB_INITIAL_PRIMARY_ROOT_USER
+      - MONGODB_PRIMARY_HOST=mongodb-primary
+      - MONGODB_PRIMARY_PORT_NUMBER=27017
+
+  mongodb-arbiter:
+    image: bitnami/mongodb:6.0.4-debian-11-r11
+    restart: always
+    depends_on:
+      - mongodb-primary
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb-arbiter
+      - MONGODB_REPLICA_SET_MODE=arbiter
+      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
+      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
+      - MONGODB_REPLICA_SET_NAME
+      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD
+      - MONGODB_REPLICA_SET_KEY
+      - MONGODB_INITIAL_PRIMARY_ROOT_USER
+      - MONGODB_PRIMARY_HOST=mongodb-primary
+      - MONGODB_PRIMARY_PORT_NUMBER=27017
+
+  redis:
+    image: "bitnami/redis:7.4.2"
+    environment:
+      - REDIS_PASSWORD
+
+volumes:
+  mongodata:
+    driver: local
+
+networks:
+  proxy:
+    external: true
