@@ -3,6 +3,7 @@ import { PrismaService } from 'src/common/prisma/prisma.service';
 import { CreateShortUrlDto } from './dto/create-short-url.dto';
 import { generateShortCode } from 'src/common/utils/gen-short-code.util';
 import { Url } from 'generated/prisma';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class UrlService {
@@ -41,5 +42,20 @@ export class UrlService {
     await this.prisma.url.delete({
       where: { id },
     });
+  }
+  async getAllUrls({ page, limit }: PaginationDto, userId?: string) {
+    const where = { userId };
+
+    const urls = await this.prisma.url.findMany({
+      where,
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const totalUrls = await this.prisma.url.count({ where });
+    const pagesCount = Math.ceil(totalUrls / limit);
+
+    return { urls, totalUrls, pagesCount };
   }
 }
