@@ -6,7 +6,9 @@ import { plainToInstance } from 'class-transformer';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { AdminRoute } from 'src/common/decorators/admin-route.decorator';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { RequireAuth } from 'src/common/decorators/require-auth.decorator';
 
+@RequireAuth()
 @ApiTags('User')
 @Controller('user')
 export class UserController {

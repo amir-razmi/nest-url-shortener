@@ -2,7 +2,7 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { IS_PUBLIC_ROUTE_KEY } from '../decorators/public-route.decorator';
+import { REQUIRE_AUTH_KEY } from '../decorators/require-auth.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -11,15 +11,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   canActivate(context: ExecutionContext) {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_ROUTE_KEY, [
+    const requireAuth = this.reflector.getAllAndOverride<boolean>(REQUIRE_AUTH_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
-    if (isPublic) {
-      return true;
-    }
+    if (requireAuth) return super.canActivate(context);
 
-    return super.canActivate(context);
+    return true;
   }
 }

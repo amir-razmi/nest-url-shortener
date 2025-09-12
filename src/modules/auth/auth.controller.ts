@@ -1,15 +1,13 @@
 import { Body, Controller, Post, Res } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
-import { VerifyEmailDto } from './dto/verify-email.dto';
-import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
-import { LoginDto } from './dto/login.dto';
-import { type Response } from 'express';
-import { PublicRoute } from 'src/common/decorators/public-route.decorator';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { type Response } from 'express';
+import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 
 @ApiTags('Auth')
-@PublicRoute()
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

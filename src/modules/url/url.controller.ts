@@ -5,7 +5,9 @@ import { type Request } from 'express';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { AdminRoute } from 'src/common/decorators/admin-route.decorator';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { RequireAuth } from 'src/common/decorators/require-auth.decorator';
 
+@RequireAuth()
 @ApiTags('URL')
 @Controller('url')
 export class UrlController {
