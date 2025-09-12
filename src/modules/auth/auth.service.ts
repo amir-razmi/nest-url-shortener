@@ -38,8 +38,13 @@ export class AuthService {
       create: { email, username, password: hashedPassword },
     });
 
+    const lastVerificationEmailSentAt = await this.redis.client.get(`lastVerificationEmailSentAt:${email}`);
+    if (lastVerificationEmailSentAt)
+      return { message: 'Too many attempts', retryAfter: +lastVerificationEmailSentAt + 60 * 30 * 1000 };
+
     const emailVerificationToken = generateRandomString(64);
 
+    await this.redis.client.set(`lastVerificationEmailSentAt:${email}`, Date.now().toString(), 'EX', 60 * 3);
     await this.redis.client.set(`verificationToken:${email}`, emailVerificationToken, 'EX', 60 * 30);
 
     await sendEmail(email, VERIFY_EMAIL_SUBJECT, VERIFY_EMAIL_HTML(username, emailVerificationToken));
@@ -69,6 +74,10 @@ export class AuthService {
     });
     if (!user) throw new Error('User not found');
     if (user.isEmailVerified) throw new Error('Email already verified');
+
+    const lastVerificationEmailSentAt = await this.redis.client.get(`lastVerificationEmailSentAt:${email}`);
+    if (lastVerificationEmailSentAt)
+      return { message: 'Too many attempts', retryAfter: +lastVerificationEmailSentAt + 60 * 30 * 1000 };
 
     const emailVerificationToken = generateRandomString(64);
 
