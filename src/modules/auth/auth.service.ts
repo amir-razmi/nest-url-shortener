@@ -1,16 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/common/prisma/prisma.service';
-import { RegisterDto } from './dto/register.dto';
 import bcrypt from 'bcrypt';
-import { sendEmail } from 'src/common/utils/send-email.util';
 import { VERIFY_EMAIL_HTML, VERIFY_EMAIL_SUBJECT } from 'src/common/constants/email-context.constant';
-import { generateRandomString } from 'src/common/utils/gen-rand-string.util';
+import { PrismaService } from 'src/common/prisma/prisma.service';
 import { RedisService } from 'src/common/redis/redis.service';
-import { VerifyEmailDto } from './dto/verify-email.dto';
-import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
+import { generateAccessToken } from 'src/common/utils/gen-access-token.util';
+import { generateRandomString } from 'src/common/utils/gen-rand-string.util';
+import { sendEmail } from 'src/common/utils/send-email.util';
 import { LoginDto } from './dto/login.dto';
-import jwt from 'jsonwebtoken';
-import { env } from 'src/env';
+import { RegisterDto } from './dto/register.dto';
+import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 
 @Injectable()
 export class AuthService {
@@ -89,7 +88,7 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) throw new Error('Invalid credentials');
 
-    const accessToken = jwt.sign({ userId: user.id }, env.JWT_SECRET, { expiresIn: '7d' });
+    const accessToken = generateAccessToken(user.id);
 
     return { accessToken, message: 'Login successful' };
   }

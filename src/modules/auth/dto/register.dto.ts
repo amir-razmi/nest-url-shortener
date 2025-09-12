@@ -11,7 +11,7 @@ export class RegisterDto {
   @ApiProperty({ minLength: 8, maxLength: 128 })
   @IsString()
   @Length(8, 128)
-  @IsStrongPassword({ minLength: 8, minUppercase: 1, minLowercase: 1, minNumbers: 1 })
+  @IsStrongPassword({ minLength: 8, minUppercase: 1, minLowercase: 1, minNumbers: 1, minSymbols: 0 })
   password: string;
 
   @ApiProperty({ minLength: 3, maxLength: 30 })
