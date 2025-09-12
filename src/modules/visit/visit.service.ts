@@ -51,4 +51,16 @@ export class VisitService {
 
     return { visits, totalVisits, totalPages };
   }
+  async getAllVisits({ page, limit }: PaginationDto) {
+    const visits = await this.prisma.visit.findMany({
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: { visitedAt: 'desc' },
+    });
+
+    const totalVisits = await this.prisma.visit.count();
+    const totalPages = Math.ceil(totalVisits / limit);
+
+    return { visits, totalVisits, totalPages };
+  }
 }
