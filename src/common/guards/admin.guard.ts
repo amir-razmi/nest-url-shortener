@@ -19,7 +19,7 @@ export class AdminGuard implements CanActivate {
     if (!isAdminRoute) return true;
 
     const request = context.switchToHttp().getRequest<Request>();
-    const { userId } = request.user as { userId: string };
+    const { userId } = request.user;
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
