@@ -6,12 +6,15 @@ import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto'
 import { LoginDto } from './dto/login.dto';
 import { type Response } from 'express';
 import { PublicRoute } from 'src/common/decorators/public-route.decorator';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @PublicRoute()
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @ApiOperation({ summary: 'Register a new user' })
   @Post('register')
   async register(@Body() body: RegisterDto) {
     return this.authService.register(body);

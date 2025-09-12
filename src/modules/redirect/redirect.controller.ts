@@ -2,7 +2,9 @@ import { Controller, Get, Param, Req, Res } from '@nestjs/common';
 import { UrlService } from '../url/url.service';
 import { type Request, type Response } from 'express';
 import { VisitService } from '../visit/visit.service';
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Redirect')
 @Controller()
 export class RedirectController {
   constructor(
@@ -10,6 +12,8 @@ export class RedirectController {
     private visitService: VisitService,
   ) {}
 
+  @ApiOperation({ summary: 'Redirect to the original URL' })
+  @ApiParam({ name: 'shortCode', description: 'The short code of the URL', type: String })
   @Get(':shortCode')
   async redirectToOriginalUrl(
     @Param('shortCode') shortCode: string,
