@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { CreateShortUrlDto } from './dto/create-short-url.dto';
 import { generateShortCode } from 'src/common/utils/gen-short-code.util';
@@ -36,8 +36,8 @@ export class UrlService {
     const url = await this.prisma.url.findUnique({
       where: { id },
     });
-    if (!url) throw new Error('URL not found');
-    if (url.userId !== userId) throw new Error('You are not authorized to delete this URL');
+    if (!url) throw new NotFoundException('URL not found');
+    if (url.userId !== userId) throw new UnauthorizedException('You are not authorized to delete this URL');
 
     await this.prisma.url.delete({
       where: { id },

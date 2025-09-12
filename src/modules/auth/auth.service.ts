@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
 import { VERIFY_EMAIL_HTML, VERIFY_EMAIL_SUBJECT } from 'src/common/constants/email-context.constant';
@@ -23,13 +23,13 @@ export class AuthService {
     const isUsernameTaken = await this.prisma.user.findFirst({
       where: { username: { equals: username, mode: 'insensitive' } },
     });
-    if (isUsernameTaken) throw new Error('Username already taken');
+    if (isUsernameTaken) throw new BadRequestException('Username already taken');
 
     const isEmailTaken = await this.prisma.user.findFirst({
       where: { email: email },
     });
 
-    if (isEmailTaken && isEmailTaken.isEmailVerified) throw new Error('Email already taken');
+    if (isEmailTaken && isEmailTaken.isEmailVerified) throw new BadRequestException('Email already taken');
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -56,11 +56,11 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
-    if (!user) throw new Error('User not found');
-    if (user.isEmailVerified) throw new Error('Email already verified');
+    if (!user) throw new NotFoundException('User not found');
+    if (user.isEmailVerified) throw new BadRequestException('Email already verified');
 
     const storedToken = await this.redis.client.get(`verificationToken:${email}`);
-    if (storedToken !== token) throw new Error('Invalid or expired token');
+    if (storedToken !== token) throw new BadRequestException('Invalid or expired token');
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -73,8 +73,8 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
-    if (!user) throw new Error('User not found');
-    if (user.isEmailVerified) throw new Error('Email already verified');
+    if (!user) throw new NotFoundException('User not found');
+    if (user.isEmailVerified) throw new BadRequestException('Email already verified');
 
     const lastVerificationEmailSentAt = await this.redis.client.get(`lastVerificationEmailSentAt:${email}`);
     if (lastVerificationEmailSentAt)
@@ -92,11 +92,11 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
-    if (!user) throw new Error('Invalid credentials');
-    if (!user.isEmailVerified) throw new Error('Email not verified');
+    if (!user) throw new BadRequestException('Invalid credentials');
+    if (!user.isEmailVerified) throw new BadRequestException('Email not verified');
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) throw new Error('Invalid credentials');
+    if (!isPasswordValid) throw new BadRequestException('Invalid credentials');
 
     const accessToken = await this.jwtService.signAsync({ userId: user.id });
 

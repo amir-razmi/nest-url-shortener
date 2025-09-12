@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { type Request } from 'express';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { UAParser } from 'ua-parser-js';
@@ -35,8 +35,8 @@ export class VisitService {
       where: { id: urlId },
     });
 
-    if (!url) throw new Error('URL not found');
-    if (url.userId !== userId) throw new Error('Unauthorized');
+    if (!url) throw new NotFoundException('URL not found');
+    if (url.userId !== userId) throw new UnauthorizedException('Unauthorized');
 
     const where = { urlId };
     const visits = await this.prisma.visit.findMany({
