@@ -1,6 +1,6 @@
 import { Exclude, Expose } from 'class-transformer';
 
-export class GetProfileResponseDto {
+export class UserResponseDto {
   @Expose()
   id: string;
 
