@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
+import { UrlModule } from '../url/url.module';
+import { VisitModule } from '../visit/visit.module';
 import { RedirectController } from './redirect.controller';
-import { UrlService } from '../url/url.service';
-import { VisitService } from '../visit/visit.service';
+import { PrismaModule } from 'src/common/prisma/prisma.module';
 
 @Module({
-  imports: [UrlService, VisitService],
+  imports: [UrlModule, VisitModule, PrismaModule],
   controllers: [RedirectController],
 })
 export class RedirectModule {}
