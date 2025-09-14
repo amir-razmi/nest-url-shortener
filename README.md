@@ -1,98 +1,145 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# URL Shortener
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A production‑ready URL shortening backend built with **NestJS**, **Prisma**, **MongoDB**, **Redis**, and **JWT**.  
+Features secure user authentication, email verification, short URL creation/deletion, and visit analytics.  
+This project is part of my portfolio as a **Node.js Backend Developer**, showcasing API security, database integration, caching, and Docker deployment skills.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+## 🚀 Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **User Authentication & Email Verification**
+  - Register with email and password.
+  - Receive an email link for verification before you can create URLs.
+  - Secure login with JWT authentication.
 
-## Project setup
+- **URL Management**
+  - Authenticated users can create and delete their short URLs.
+
+- **URL Redirection & Analytics**
+  - Redirects visitors to the original URL.
+  - Logs analytics data into MongoDB:
+    - IP address
+    - Browser name
+    - Operating system
+    - Referrer
+    - User agent
+    - Device type
+    - Visit timestamp
+
+- **Role-Based Access Control**
+  - **User Role** – Create and delete own short URLs.
+  - **Admin Role** – All user abilities plus access to:
+    - Get all users (`GET /admin/users`)
+    - Get all short URLs (`GET /admin/urls`)
+    - Get overall statistics (`GET /admin/stats`)
+
+- **API Documentation**
+  - Swagger UI available at [`/api-doc`](http://localhost:5000/api-doc)
+
+- **Dockerized Deployment**
+  - Multi‑service `docker-compose` setup:
+    - NestJS application
+    - 3‑node MongoDB replica set
+    - Redis service
+
+## 🛠 Technologies Used
+
+- [NestJS](https://nestjs.com/)
+- [Prisma](https://www.prisma.io/)
+- [MongoDB](https://www.mongodb.com/)
+- [Redis](https://redis.io/)
+- [JWT](https://jwt.io/)
+- [Swagger](https://swagger.io/)
+- [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
+
+
+## 📦 Prerequisites
+
+- Node.js v16 or higher  
+- npm, yarn, or pnpm  
+- Docker & Docker Compose (for containerized setup)  
+- MongoDB & Redis (if running locally without Docker)  
+- Email service provider credentials (SMTP) for verification emails
+
+## ⚙️ Installation and Setup
+
+### Local Development
+
+1. Clone the repository:
+  ```bash 
+git clone https://github.com/amir-razmi/nest-url-shortener.git
+cd nest-url-shortener
+  ```
+
+
+2. Install dependencies:
+  ```bash
+pnpm i
+  ```
+
+
+3. Copy the example environment file and configure it:
+```bash
+cp .example-dev.env .env
+```
+   Edit `.env` with your settings (e.g., MongoDB URI, Redis config, JWT secret, email service details).
+
+4. Start local services (MongoDB and Redis) if not using Docker. Ensure they are running.
+
+5. Run database migrations (if applicable) or seed data using Prisma:
 
 ```bash
-$ pnpm install
+npx prisma generate
+npx prisma db push
 ```
 
-## Compile and run the project
-
+6. Start the application:
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+pnpm start:dev
 ```
 
-## Run tests
+   The server will run on `http://localhost:5000` (or your configured port).
 
+### 🐳  Docker Setup
+
+1. Copy the example Docker environment file:
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+cp .example-docker.env .env
 ```
+   Edit `.env` with necessary configurations.
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+3. Build and start the containers:
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+  docker-compose up -d --build
 ```
+   This sets up:
+   - The NestJS server service.
+   - A 3-node MongoDB replica set for high availability.
+   - A Redis service for caching.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+   The application will be accessible at `http://localhost:5000` (or configured port).
 
-## Resources
 
-Check out a few resources that may come in handy when working with NestJS:
+## 📌 Usage
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+1. **Register a User**: POST to `/auth/register` with email and password. Verify via the sent email.
+2. **Login**: POST to `/auth/login` to get a JWT token.
+3. **Create Short URL**: Authenticated POST to `/urls` with the original URL.
+4. **Delete Short URL**: Authenticated DELETE to `/urls/:shortCode`.
+5. **Redirect**: GET to `/:shortCode` to redirect and log visit stats.
+6. **Admin Routes** (requires Admin role):
+   - GET `/admin/users` - Get all users.
+   - GET `/admin/urls` - Get all short URLs.
+   - GET `/admin/stats` - Get overall statistics.
+7. **API Docs**: Visit `/api-doc` for Swagger interface to explore all endpoints.
 
-## Support
+## 🔑 Environment Variables
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- Use `.example-dev.env` as a template for local development.
+- Use `.example-docker.env` as a template for Dockerized environments.
+- Key variables include: DATABASE_URL, REDIS_URL, JWT_SECRET, EMAIL_SERVICE_CONFIG, etc.
 
-## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Built by **Amirmohammad Razmi** as a showcase of Node.js backend expertise. For questions, reach out via [Linkedin](https://linkedin.com/in/amir-mohammad-razmi-b85602217).
