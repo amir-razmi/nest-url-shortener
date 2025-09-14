@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from 'src/common/prisma/prisma.service';
+import { PrismaService } from 'src/common/db/prisma/prisma.service';
 import { CreateShortUrlDto } from './dto/create-short-url.dto';
 import { generateShortCode } from 'src/common/utils/gen-short-code.util';
 import { Url } from '@prisma/client';

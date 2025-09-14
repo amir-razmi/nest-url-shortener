@@ -2,8 +2,8 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
 import { VERIFY_EMAIL_HTML, VERIFY_EMAIL_SUBJECT } from 'src/common/constants/email-context.constant';
-import { PrismaService } from 'src/common/prisma/prisma.service';
-import { RedisService } from 'src/common/redis/redis.service';
+import { PrismaService } from 'src/common/db/prisma/prisma.service';
+import { RedisService } from 'src/common/db/redis/redis.service';
 import { generateRandomString } from 'src/common/utils/gen-rand-string.util';
 import { sendEmail } from 'src/common/utils/send-email.util';
 import { LoginDto } from './dto/login.dto';

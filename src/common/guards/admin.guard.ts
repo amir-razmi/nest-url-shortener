@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { type Request } from 'express';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../db/prisma/prisma.service';
 
 @Injectable()
 export class AdminGuard implements CanActivate {

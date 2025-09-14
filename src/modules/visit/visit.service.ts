@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { type Request } from 'express';
-import { PrismaService } from 'src/common/prisma/prisma.service';
+import { PrismaService } from 'src/common/db/prisma/prisma.service';
 import { UAParser } from 'ua-parser-js';
 import * as requestIp from 'request-ip';
 import { PaginationDto } from 'src/common/dto/pagination.dto';

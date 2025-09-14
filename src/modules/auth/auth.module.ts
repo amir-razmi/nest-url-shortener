@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { PrismaModule } from 'src/common/prisma/prisma.module';
-import { RedisModule } from 'src/common/redis/redis.module';
+import { PrismaModule } from 'src/common/db/prisma/prisma.module';
+import { RedisModule } from 'src/common/db/redis/redis.module';
 import { JwtModule } from '@nestjs/jwt';
 import { env } from 'src/env';
 
