@@ -63,7 +63,7 @@ This project is part of my portfolio as a **Node.js Backend Developer**, showcas
 
 ## ⚙️ Installation and Setup
 
-### Local Development
+### 💻 Local Development
 
 1. Clone the repository:
   ```bash 
