@@ -33,13 +33,13 @@ export class UrlService {
     return url;
   }
   async deleteShortUrl(id: string, userId: string) {
-    const url = await this.prisma.url.findUnique({
+    const url = await this.prisma.extendedPrisma.url.findUnique({
       where: { id },
     });
     if (!url) throw new NotFoundException('URL not found');
     if (url.userId !== userId) throw new UnauthorizedException('You are not authorized to delete this URL');
 
-    await this.prisma.url.delete({
+    await this.prisma.extendedPrisma.url.delete({
       where: { id },
     });
   }
@@ -59,7 +59,7 @@ export class UrlService {
     return { urls, totalUrls, pagesCount };
   }
   async getUrlByShortCode(shortCode: string) {
-    const url = await this.prisma.url.findUnique({
+    const url = await this.prisma.extendedPrisma.url.findUnique({
       where: { shortCode },
     });
 
