@@ -35,7 +35,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
               const result = (await query(args)) as Url | null;
               if (result) {
-                await this.setCache(`url:id=${result.id}:shortCode=${result.shortCode}`, result, 60);
+                await this.setCache(`url:id=${result.id}:shortCode=${result.shortCode}`, result, 600);
               }
               return result;
             }
