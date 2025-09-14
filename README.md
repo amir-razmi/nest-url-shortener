@@ -142,4 +142,4 @@ cp .example-docker.env .env
 
 ---
 
-Built by **Amirmohammad Razmi** as a showcase of Node.js backend expertise. For questions, reach out via [Linkedin](https://linkedin.com/in/amir-mohammad-razmi-b85602217).
+Built by **Amirmohammad Razmi** as a showcase of Node.js backend expertise. For questions, reach out via <a href="https://linkedin.com/in/amir-mohammad-razmi-b85602217" target="_blank">LinkedIn</a>.
