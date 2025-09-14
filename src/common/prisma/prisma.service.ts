@@ -22,16 +22,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       query: {
         url: {
           $allOperations: async ({ operation, args, query }) => {
-            const { where: whereArg } = args as {
-              where: Record<string, string>;
-            };
-
-            let cachePattern = '';
-            if (whereArg.id) cachePattern = `url:id=${whereArg.id}*`;
-            else if (whereArg.shortCode) cachePattern = `url:*:shortCode=${whereArg.shortCode}`;
-
             //INFO: "Redirect" route is the most used route. that's why single-query operations are the only operations i'm caching.
             if (['findUnique', 'findFirst', 'findFirstOrThrough'].includes(operation)) {
+              const { where: whereArg } = args as { where: Record<string, string> };
+
+              let cachePattern = '';
+              if (whereArg.id) cachePattern = `url:id=${whereArg.id}*`;
+              else if (whereArg.shortCode) cachePattern = `url:*:shortCode=${whereArg.shortCode}`;
+
               const cached = await this.getCacheByPattern<unknown>(cachePattern);
               if (cached) return cached;
 
