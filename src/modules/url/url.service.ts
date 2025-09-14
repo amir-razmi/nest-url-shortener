@@ -42,6 +42,8 @@ export class UrlService {
     await this.prisma.extendedPrisma.url.delete({
       where: { id },
     });
+
+    return { message: 'Url deleted successfully' };
   }
   async getAllUrls({ page, limit }: PaginationDto, userId?: string) {
     const where = { userId };
