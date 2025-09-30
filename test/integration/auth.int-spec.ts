@@ -10,5 +10,8 @@ describe('Auth (int)', () => {
     }).compile();
 
     prisma = moduleRef.get<PrismaService>(PrismaService);
+    await prisma.cleanDb();
   });
+
+  it('it should pass', () => {});
 });

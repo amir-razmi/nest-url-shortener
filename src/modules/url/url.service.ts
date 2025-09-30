@@ -14,7 +14,7 @@ export class UrlService {
 
     while (true) {
       try {
-        const shortUniqueCode = generateShortCode(7);
+        const shortUniqueCode = await generateShortCode(7);
 
         url = await this.prisma.url.create({
           data: {

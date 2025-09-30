@@ -19,9 +19,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
   async cleanDb() {
     if (env.NODE_ENV === 'production') return;
-    const models = Reflect.ownKeys(this).filter(
-      (key) => key[0] !== '_' && key !== 'isTransaction' && key !== 'extendedPrisma',
-    );
+    const models = ['user', 'user', 'visit'];
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     await Promise.all(models.map((model) => this[model].deleteMany()));
