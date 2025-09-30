@@ -1,6 +1,7 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient, Url } from '@prisma/client';
 import { RedisService } from '../redis/redis.service';
+import { env } from 'src/env';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor(private redis: RedisService) {
@@ -15,6 +16,15 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
   async onModuleDestroy() {
     await this.$disconnect();
+  }
+  async cleanDb() {
+    if (env.NODE_ENV === 'production') return;
+    const models = Reflect.ownKeys(this).filter(
+      (key) => key[0] !== '_' && key !== 'isTransaction' && key !== 'extendedPrisma',
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    await Promise.all(models.map((model) => this[model].deleteMany()));
   }
 
   private setupCaching() {
