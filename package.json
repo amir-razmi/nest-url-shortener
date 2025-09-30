@@ -19,7 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "db:restart": "docker compose down && docker compose up -d && sleep 5 && npx prisma db push",
-    "test:int": "jest -i --no-cache --watch --config jest-int.json"
+    "test:int": "jest -i --no-cache --watch --config jest-int.config.json"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
