@@ -18,8 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "db:restart": "docker compose down && docker compose up -d && sleep 5 && npx prisma db push",
-    "test:int": "jest -i --no-cache --watch --config jest-int.config.json"
+    "db:restart": "docker compose -f docker-compose.test.yaml down && docker compose -f docker-compose.test.yaml up -d && sleep 5 && npx prisma db push",
+    "test:int": "dotenv -e .example-test.env -- jest -i --no-cache --watchAll --config jest-int.config.json"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -61,6 +61,7 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/request-ip": "^0.0.41",
     "@types/supertest": "^6.0.2",
+    "dotenv-cli": "^10.0.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
