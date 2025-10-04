@@ -1,6 +1,6 @@
-import { INestApplication } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { after } from 'node:test';
 import { AppModule } from 'src/app.module';
 import { PrismaService } from 'src/common/db/prisma/prisma.service';
 import { RedisService } from 'src/common/db/redis/redis.service';
@@ -23,10 +23,16 @@ describe('Auth (int)', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
     await app.init();
 
     prisma = moduleRef.get<PrismaService>(PrismaService);
-    await prisma.cleanDb();
 
     redis = moduleRef.get<RedisService>(RedisService);
     await redis.client.flushall();
@@ -41,12 +47,11 @@ describe('Auth (int)', () => {
   });
 
   it('/auth/register  should register user', async () => {
-    const res = await request(app.getHttpServer()).post('/auth/register').send().expect(201);
-
+    const res = await request(app.getHttpServer()).post('/auth/register').send(testUser).expect(201);
     expect(res.body).toHaveProperty('message');
 
     const userInDb = await prisma.user.findUnique({
-      where: { email: 'test@gmail.com' },
+      where: { email: testUser.email.toLowerCase() },
     });
     expect(userInDb).toBeTruthy();
     expect(userInDb?.isEmailVerified).toBe(false);
@@ -54,6 +59,12 @@ describe('Auth (int)', () => {
     expect(userInDb?.password).not.toBe(testUser.password);
     expect(userInDb?.email).toBe(testUser.email.toLowerCase());
 
-    const verificationTokenInRedis = await redis.client.get(``)
+    const verificationTokenInRedis = await redis.verificationTokenService.get(testUser.email.toLowerCase());
+    expect(verificationTokenInRedis).toBeTruthy();
+
+    const verificationLastSentAtInRedis = await redis.verificationTokenService.getLastSentAt(
+      testUser.email.toLowerCase(),
+    );
+    expect(verificationLastSentAtInRedis).toBeTruthy();
   });
 });
