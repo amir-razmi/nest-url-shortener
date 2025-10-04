@@ -1,82 +1,20 @@
 services:
-  mongodb-primary:
+  mongodb:
     image: bitnami/mongodb:6.0.4-debian-11-r11
     restart: always
     environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-primary
+      - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
       - MONGODB_REPLICA_SET_MODE=primary
-      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
-      - MONGODB_PRIMARY_HOST=mongodb-primary
-      - MONGODB_PRIMARY_PORT_NUMBER=27017
-      - MONGODB_REPLICA_SET_NAME
-      - MONGODB_DATABASE
-      - MONGODB_USERNAME
-      - MONGODB_PASSWORD
-      - MONGODB_ROOT_USER
-      - MONGODB_ROOT_PASSWORD
-      - MONGODB_REPLICA_SET_KEY
-    healthcheck:
-      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
+      - ALLOW_EMPTY_PASSWORD=yes
     ports:
       - 27018:27017
 
-  mongodb-secondary:
-    image: bitnami/mongodb:6.0.4-debian-11-r11
-    restart: always
-    depends_on:
-      - mongodb-primary
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary
-      - MONGODB_REPLICA_SET_MODE=secondary
-      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
-      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27018
-      - MONGODB_PRIMARY_HOST=mongodb-primary
-      - MONGODB_PRIMARY_PORT_NUMBER=27018
-      - MONGODB_REPLICA_SET_NAME
-      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD
-      - MONGODB_REPLICA_SET_KEY
-      - MONGODB_INITIAL_PRIMARY_ROOT_USER
-    healthcheck:
-      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-    ports:
-      - 28018:27017
-
-  mongodb-arbiter:
-    image: bitnami/mongodb:6.0.4-debian-11-r11
-    restart: always
-    depends_on:
-      - mongodb-primary
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-arbiter
-      - MONGODB_REPLICA_SET_MODE=arbiter
-      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
-      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27018
-      - MONGODB_PRIMARY_HOST=mongodb-primary
-      - MONGODB_PRIMARY_PORT_NUMBER=27018
-      - MONGODB_REPLICA_SET_NAME
-      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD
-      - MONGODB_REPLICA_SET_KEY
-      - MONGODB_INITIAL_PRIMARY_ROOT_USER
-    healthcheck:
-      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-    ports:
-      - 29018:27017
-
   redis:
-    image: 'bitnami/redis:7.4.2'
+    image: "bitnami/redis:7.4.2"
     environment:
       - REDIS_PASSWORD
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 10
