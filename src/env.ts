@@ -6,6 +6,7 @@ config();
 export const env = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']),
+    DATABASE_URL: z.string().min(1),
     CORS: z.string().min(1),
     PORT: z.coerce.number().default(5000),
     SMTP_USER: z.email(),
