@@ -39,14 +39,13 @@ export class AuthService {
       create: { email, username, password: hashedPassword },
     });
 
-    const lastVerificationEmailSentAt = await this.redis.client.get(`lastVerificationEmailSentAt:${email}`);
+    const lastVerificationEmailSentAt = await this.redis.verificationTokenService.getLastSentAt(email);
     if (lastVerificationEmailSentAt)
       return { message: 'Too many attempts', retryAfter: +lastVerificationEmailSentAt + 60 * 30 * 1000 };
 
     const emailVerificationToken = generateRandomString(64);
 
-    await this.redis.client.set(`lastVerificationEmailSentAt:${email}`, Date.now().toString(), 'EX', 60 * 3);
-    await this.redis.client.set(`verificationToken:${email}`, emailVerificationToken, 'EX', 60 * 30);
+    await this.redis.verificationTokenService.set(email, emailVerificationToken);
 
     await sendEmail(email, VERIFY_EMAIL_SUBJECT, VERIFY_EMAIL_HTML(username, emailVerificationToken));
 
@@ -59,7 +58,7 @@ export class AuthService {
     if (!user) throw new NotFoundException('User not found');
     if (user.isEmailVerified) throw new BadRequestException('Email already verified');
 
-    const storedToken = await this.redis.client.get(`verificationToken:${email}`);
+    const storedToken = await this.redis.verificationTokenService.get(email);
     if (storedToken !== token) throw new BadRequestException('Invalid or expired token');
 
     await this.prisma.user.update({
@@ -76,13 +75,13 @@ export class AuthService {
     if (!user) throw new NotFoundException('User not found');
     if (user.isEmailVerified) throw new BadRequestException('Email already verified');
 
-    const lastVerificationEmailSentAt = await this.redis.client.get(`lastVerificationEmailSentAt:${email}`);
+    const lastVerificationEmailSentAt = await this.redis.verificationTokenService.getLastSentAt(email);
     if (lastVerificationEmailSentAt)
       return { message: 'Too many attempts', retryAfter: +lastVerificationEmailSentAt + 60 * 30 * 1000 };
 
     const emailVerificationToken = generateRandomString(64);
 
-    await this.redis.client.set(`verificationToken:${email}`, emailVerificationToken, 'EX', 60 * 30);
+    await this.redis.verificationTokenService.set(email, emailVerificationToken);
 
     await sendEmail(email, VERIFY_EMAIL_SUBJECT, VERIFY_EMAIL_HTML(user.username, emailVerificationToken));
 
