@@ -48,7 +48,7 @@ export class AuthController {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      maxAge: 1, // 7 days
+      maxAge: 1,
     });
 
     return res.json({ message: 'Logged out successfully' });
