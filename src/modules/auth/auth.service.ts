@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
 import { VERIFY_EMAIL_HTML, VERIFY_EMAIL_SUBJECT } from 'src/common/constants/email-context.constant';
@@ -30,12 +30,12 @@ export class AuthService {
       where: { email },
     });
     if (isEmailTaken) {
-      if (isEmailTaken.isEmailVerified) throw new BadRequestException('Email already taken');
+      if (isEmailTaken.isEmailVerified) throw new ConflictException('Email already taken');
 
       //INFO: Check if the email was registered more than 24 hours ago, if so, allow re-registration
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const registrationAgeInDays = DateTime.fromJSDate(isEmailTaken.createdAt).diffNow('days').days;
-      if (registrationAgeInDays > -1) throw new BadRequestException('Email already taken');
+      if (registrationAgeInDays > -1) throw new ConflictException('Email already taken');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -47,8 +47,10 @@ export class AuthService {
     });
 
     const lastVerificationEmailSentAt = await this.redis.verificationTokenService.getLastSentAt(email);
-    if (lastVerificationEmailSentAt)
+    if (lastVerificationEmailSentAt) {
+      //Client side can use this to set Retry-After header
       return { message: 'Too many attempts', retryAfter: +lastVerificationEmailSentAt + 60 * 30 * 1000 };
+    }
 
     const emailVerificationToken = generateRandomString(64);
 
