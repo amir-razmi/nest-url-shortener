@@ -10,6 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class AuthService {
@@ -25,11 +26,17 @@ export class AuthService {
     });
     if (isUsernameTaken) throw new BadRequestException('Username already taken');
 
-    const isEmailTaken = await this.prisma.user.findFirst({
-      where: { email: email },
+    const isEmailTaken = await this.prisma.user.findUnique({
+      where: { email },
     });
+    if (isEmailTaken) {
+      if (isEmailTaken.isEmailVerified) throw new BadRequestException('Email already taken');
 
-    if (isEmailTaken && isEmailTaken.isEmailVerified) throw new BadRequestException('Email already taken');
+      //INFO: Check if the email was registered more than 24 hours ago, if so, allow re-registration
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      const registrationAgeInDays = DateTime.fromJSDate(isEmailTaken.createdAt).diffNow('days').days;
+      if (registrationAgeInDays > -1) throw new BadRequestException('Email already taken');
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
