@@ -11,6 +11,10 @@ export class RedisVerificationTokenService {
     const storedToken = await this.redis.get(`verificationToken:${email}`);
     return storedToken;
   }
+  async delete(email: string) {
+    await this.redis.del(`verificationToken:${email}`);
+    await this.redis.del(`lastVerificationEmailSentAt:${email}`);
+  }
   async getLastSentAt(email: string) {
     const lastVerificationEmailSentAt = await this.redis.get(`lastVerificationEmailSentAt:${email}`);
     return lastVerificationEmailSentAt;

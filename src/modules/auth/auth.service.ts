@@ -1,6 +1,14 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
+import { DateTime } from 'luxon';
 import { VERIFY_EMAIL_HTML, VERIFY_EMAIL_SUBJECT } from 'src/common/constants/email-context.constant';
 import { PrismaService } from 'src/common/db/prisma/prisma.service';
 import { RedisService } from 'src/common/db/redis/redis.service';
@@ -10,7 +18,6 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
-import { DateTime } from 'luxon';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +31,7 @@ export class AuthService {
     const isUsernameTaken = await this.prisma.user.findFirst({
       where: { username: { equals: username, mode: 'insensitive' } },
     });
-    if (isUsernameTaken) throw new BadRequestException('Username already taken');
+    if (isUsernameTaken) throw new ConflictException('Username already taken');
 
     const isEmailTaken = await this.prisma.user.findUnique({
       where: { email },
@@ -45,12 +52,6 @@ export class AuthService {
       update: { username: username, password: hashedPassword, isEmailVerified: false },
       create: { email, username, password: hashedPassword },
     });
-
-    const lastVerificationEmailSentAt = await this.redis.verificationTokenService.getLastSentAt(email);
-    if (lastVerificationEmailSentAt) {
-      //Client side can use this to set Retry-After header
-      return { message: 'Too many attempts', retryAfter: +lastVerificationEmailSentAt + 60 * 30 * 1000 };
-    }
 
     const emailVerificationToken = generateRandomString(64);
 
@@ -74,6 +75,7 @@ export class AuthService {
       where: { id: user.id },
       data: { isEmailVerified: true },
     });
+    await this.redis.verificationTokenService.delete(email);
 
     return { message: 'Email verified successfully.' };
   }
@@ -85,8 +87,13 @@ export class AuthService {
     if (user.isEmailVerified) throw new BadRequestException('Email already verified');
 
     const lastVerificationEmailSentAt = await this.redis.verificationTokenService.getLastSentAt(email);
-    if (lastVerificationEmailSentAt)
-      return { message: 'Too many attempts', retryAfter: +lastVerificationEmailSentAt + 60 * 30 * 1000 };
+    if (lastVerificationEmailSentAt) {
+      //Client side can use this to set Retry-After header
+      return {
+        message: 'Too many attempts',
+        retryAfter: +lastVerificationEmailSentAt + 60 * 30 * 1000, // 30 minutes after last sent
+      };
+    }
 
     const emailVerificationToken = generateRandomString(64);
 
@@ -100,11 +107,11 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
-    if (!user) throw new BadRequestException('Invalid credentials');
-    if (!user.isEmailVerified) throw new BadRequestException('Email not verified');
+    if (!user) throw new UnauthorizedException('Invalid credentials');
+    if (!user.isEmailVerified) throw new ForbiddenException('Email not verified');
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) throw new BadRequestException('Invalid credentials');
+    if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
 
     const accessToken = await this.jwtService.signAsync({ userId: user.id });
 
