@@ -25,6 +25,15 @@ export const registerUser = async (app: INestApplication, verifyEmail = false) =
       .expect(201);
   }
 };
+export const getAccessTokenCookie = async (app: INestApplication) => {
+  await registerUser(app, true); //Register and verify
+
+  const res = await request(app.getHttpServer())
+    .post('/auth/login')
+    .send({ email: testUser.email, password: testUser.password })
+    .expect(201);
+  return res.headers['set-cookie'][0].split(';')[0];
+};
 
 describe('Auth (int)', () => {
   let prisma: PrismaService;
