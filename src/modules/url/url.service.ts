@@ -12,7 +12,7 @@ export class UrlService {
   async createShortUrl({ originalUrl }: CreateShortUrlDto, userId: string) {
     let url: Url;
 
-    while (true) {
+    for (let i = 0; i < 10; i++) {
       try {
         const shortUniqueCode = await generateShortCode(7);
 
@@ -25,12 +25,12 @@ export class UrlService {
         });
 
         break;
-      } catch {
-        /** */
+      } catch (error) {
+        if (i === 9) throw error;
       }
     }
 
-    return url;
+    return url!;
   }
   async deleteShortUrl(id: string, userId: string) {
     const url = await this.prisma.extendedPrisma.url.findUnique({
