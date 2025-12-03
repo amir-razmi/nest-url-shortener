@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -47,13 +48,31 @@ describe('URL (int)', () => {
   it('should create short url', async () => {
     const accessToken = await getAccessTokenCookie(app);
 
-    console.log('ACCESS TOKEN : ', accessToken);
     const res = await request(app.getHttpServer())
       .post('/url/create')
       .set('Cookie', accessToken)
       .send({ originalUrl: 'https://nestjs.com' })
       .expect(201);
 
-    console.log(res.body);
+    expect(res.body).toHaveProperty('id');
+    expect(res.body).toHaveProperty('originalUrl', 'https://nestjs.com');
+    expect(res.body).toHaveProperty('shortCode');
+    expect(res.body).toHaveProperty('createdAt');
+  });
+  it('delete short url', async () => {
+    const accessToken = await getAccessTokenCookie(app);
+
+    const createRes = await request(app.getHttpServer())
+      .post('/url/create')
+      .set('Cookie', accessToken)
+      .send({ originalUrl: 'https://nestjs.com' })
+      .expect(201);
+
+    const urlId = createRes.body.id as string;
+
+    await request(app.getHttpServer()).delete(`/url/delete/${urlId}`).set('Cookie', accessToken).expect(200);
+
+    const fetchRecordFromDb = await prisma.url.findUnique({ where: { id: urlId } });
+    expect(fetchRecordFromDb).toBeNull();
   });
 });
