@@ -98,4 +98,19 @@ describe('URL (int)', () => {
       .set('Cookie', anotherAccessToken)
       .expect(403);
   });
+  it('delete short url - not found', async () => {
+    const accessToken = await getAccessTokenCookie(app);
+
+    const createRes = await request(app.getHttpServer())
+      .post('/url/create')
+      .set('Cookie', accessToken)
+      .send({ originalUrl: 'https://nestjs.com' })
+      .expect(201);
+
+    const urlId = createRes.body.id as string;
+
+    await request(app.getHttpServer()).delete(`/url/delete/${urlId}`).set('Cookie', accessToken).expect(200);
+
+    await request(app.getHttpServer()).delete(`/url/delete/${urlId}`).set('Cookie', accessToken).expect(404);
+  });
 });
