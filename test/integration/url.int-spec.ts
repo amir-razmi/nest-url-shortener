@@ -6,8 +6,8 @@ import { AppModule } from 'src/app.module';
 import { PrismaService } from 'src/common/db/prisma/prisma.service';
 import { RedisService } from 'src/common/db/redis/redis.service';
 import request from 'supertest';
-import { getAccessTokenCookie, testUser } from './auth.int-spec';
 import cookieParser from 'cookie-parser';
+import { loginAdmin, loginUser, testUser } from 'test/helpers/auth.helper';
 
 describe('URL (int)', () => {
   let prisma: PrismaService;
@@ -47,7 +47,7 @@ describe('URL (int)', () => {
   });
 
   it('should create short url', async () => {
-    const accessToken = await getAccessTokenCookie(app);
+    const accessToken = await loginUser(app);
 
     const res = await request(app.getHttpServer())
       .post('/url/create')
@@ -67,7 +67,7 @@ describe('URL (int)', () => {
       .expect(401);
   });
   it('delete short url', async () => {
-    const accessToken = await getAccessTokenCookie(app);
+    const accessToken = await loginUser(app);
 
     const createRes = await request(app.getHttpServer())
       .post('/url/create')
@@ -86,7 +86,7 @@ describe('URL (int)', () => {
     await request(app.getHttpServer()).delete(`/url/delete/id`).expect(401);
   });
   it('delete short url - unauthorized', async () => {
-    const accessToken = await getAccessTokenCookie(app);
+    const accessToken = await loginUser(app);
 
     const createRes = await request(app.getHttpServer())
       .post('/url/create')
@@ -96,7 +96,7 @@ describe('URL (int)', () => {
 
     const urlId = createRes.body.id as string;
 
-    const anotherAccessToken = await getAccessTokenCookie(app, {
+    const anotherAccessToken = await loginUser(app, {
       ...testUser,
       email: 'Test2@gmail.com',
       username: 'amir2',
@@ -108,7 +108,7 @@ describe('URL (int)', () => {
       .expect(403);
   });
   it('delete short url - not found', async () => {
-    const accessToken = await getAccessTokenCookie(app);
+    const accessToken = await loginUser(app);
 
     const createRes = await request(app.getHttpServer())
       .post('/url/create')
@@ -123,7 +123,7 @@ describe('URL (int)', () => {
     await request(app.getHttpServer()).delete(`/url/delete/${urlId}`).set('Cookie', accessToken).expect(404);
   });
   it('should get all urls with pagination', async () => {
-    const accessToken = await getAccessTokenCookie(app);
+    const accessToken = await loginUser(app);
 
     for (let i = 0; i < 15; i++) {
       await request(app.getHttpServer())
@@ -145,5 +145,34 @@ describe('URL (int)', () => {
   });
   it('should throw auth error when getting urls without auth', async () => {
     await request(app.getHttpServer()).get('/url/all').expect(401);
+  });
+  it('should get all urls for admin', async () => {
+    const accessTokens = [
+      await loginUser(app),
+      await loginUser(app, { ...testUser, email: 'test2@gmail.com', username: 'test2' }),
+    ];
+
+    for (let i = 0; i < 30; i++) {
+      await request(app.getHttpServer())
+        .post('/url/create')
+        .set('Cookie', accessTokens[i % 2]) //Create urls for both users
+        .send({ originalUrl: `https://nestjs.com/${i}` })
+        .expect(201);
+    }
+
+    const adminAccessToken = await loginAdmin(app);
+
+    const resPage1 = await request(app.getHttpServer())
+      .get('/url/admin/all?page=1&limit=20')
+      .set('Cookie', adminAccessToken)
+      .expect(200);
+
+    expect(resPage1.body).toHaveProperty('urls');
+    expect(resPage1.body.totalUrls).toBe(30);
+    expect(resPage1.body.pagesCount).toBe(2);
+    expect(resPage1.body.urls.length).toBe(20);
+  });
+  it('should throw auth error when admin getting all urls without auth', async () => {
+    await request(app.getHttpServer()).get('/url/admin/all').expect(401);
   });
 });
