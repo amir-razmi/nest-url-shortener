@@ -123,19 +123,23 @@ describe('URL (int)', () => {
     await request(app.getHttpServer()).delete(`/url/delete/${urlId}`).set('Cookie', accessToken).expect(404);
   });
   it('should get all urls with pagination', async () => {
-    const accessToken = await loginUser(app);
+    const accessTokens = [
+      await loginUser(app),
+      await loginUser(app, { ...testUser, email: 'test2@gmail.com', username: 'test2' }),
+    ];
 
-    for (let i = 0; i < 15; i++) {
+    // I create urls for both users to check isolation
+    for (let i = 0; i < 30; i++) {
       await request(app.getHttpServer())
         .post('/url/create')
-        .set('Cookie', accessToken)
+        .set('Cookie', accessTokens[i % 2]) //Create urls for both users
         .send({ originalUrl: `https://nestjs.com/${i}` })
         .expect(201);
     }
 
     const resPage1 = await request(app.getHttpServer())
       .get('/url/all?page=1&limit=10')
-      .set('Cookie', accessToken)
+      .set('Cookie', accessTokens[0])
       .expect(200);
 
     expect(resPage1.body).toHaveProperty('urls');
