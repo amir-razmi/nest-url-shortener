@@ -113,4 +113,25 @@ describe('URL (int)', () => {
 
     await request(app.getHttpServer()).delete(`/url/delete/${urlId}`).set('Cookie', accessToken).expect(404);
   });
+  it('should get all urls with pagination', async () => {
+    const accessToken = await getAccessTokenCookie(app);
+
+    for (let i = 0; i < 15; i++) {
+      await request(app.getHttpServer())
+        .post('/url/create')
+        .set('Cookie', accessToken)
+        .send({ originalUrl: `https://nestjs.com/${i}` })
+        .expect(201);
+    }
+
+    const resPage1 = await request(app.getHttpServer())
+      .get('/url/all?page=1&limit=10')
+      .set('Cookie', accessToken)
+      .expect(200);
+
+    expect(resPage1.body).toHaveProperty('urls');
+    expect(resPage1.body.totalUrls).toBe(15);
+    expect(resPage1.body.pagesCount).toBe(2);
+    expect(resPage1.body.urls.length).toBe(10);
+  });
 });
