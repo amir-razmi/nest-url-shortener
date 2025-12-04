@@ -60,6 +60,12 @@ describe('URL (int)', () => {
     expect(res.body).toHaveProperty('shortCode');
     expect(res.body).toHaveProperty('createdAt');
   });
+  it('should throw auth error when creating urls without auth', async () => {
+    await request(app.getHttpServer())
+      .post('/url/create')
+      .send({ originalUrl: 'https://nestjs.com' })
+      .expect(401);
+  });
   it('delete short url', async () => {
     const accessToken = await getAccessTokenCookie(app);
 
@@ -75,6 +81,9 @@ describe('URL (int)', () => {
 
     const fetchRecordFromDb = await prisma.url.findUnique({ where: { id: urlId } });
     expect(fetchRecordFromDb).toBeNull();
+  });
+  it('should throw auth error when deleting urls without auth', async () => {
+    await request(app.getHttpServer()).delete(`/url/delete/id`).expect(401);
   });
   it('delete short url - unauthorized', async () => {
     const accessToken = await getAccessTokenCookie(app);
@@ -133,5 +142,8 @@ describe('URL (int)', () => {
     expect(resPage1.body.totalUrls).toBe(15);
     expect(resPage1.body.pagesCount).toBe(2);
     expect(resPage1.body.urls.length).toBe(10);
+  });
+  it('should throw auth error when getting urls without auth', async () => {
+    await request(app.getHttpServer()).get('/url/all').expect(401);
   });
 });
