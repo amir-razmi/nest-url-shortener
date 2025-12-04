@@ -6,7 +6,7 @@ import { AppModule } from 'src/app.module';
 import { PrismaService } from 'src/common/db/prisma/prisma.service';
 import { RedisService } from 'src/common/db/redis/redis.service';
 import request from 'supertest';
-import { getAccessTokenCookie } from './auth.int-spec';
+import { getAccessTokenCookie, testUser } from './auth.int-spec';
 import cookieParser from 'cookie-parser';
 
 describe('URL (int)', () => {
@@ -38,6 +38,7 @@ describe('URL (int)', () => {
   });
 
   afterAll(async () => {
+    await prisma.cleanDb();
     await app.close();
   });
 
@@ -74,5 +75,27 @@ describe('URL (int)', () => {
 
     const fetchRecordFromDb = await prisma.url.findUnique({ where: { id: urlId } });
     expect(fetchRecordFromDb).toBeNull();
+  });
+  it('delete short url - unauthorized', async () => {
+    const accessToken = await getAccessTokenCookie(app);
+
+    const createRes = await request(app.getHttpServer())
+      .post('/url/create')
+      .set('Cookie', accessToken)
+      .send({ originalUrl: 'https://nestjs.com' })
+      .expect(201);
+
+    const urlId = createRes.body.id as string;
+
+    const anotherAccessToken = await getAccessTokenCookie(app, {
+      ...testUser,
+      email: 'Test2@gmail.com',
+      username: 'amir2',
+    });
+
+    await request(app.getHttpServer())
+      .delete(`/url/delete/${urlId}`)
+      .set('Cookie', anotherAccessToken)
+      .expect(403);
   });
 });

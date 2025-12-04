@@ -6,31 +6,31 @@ import { PrismaService } from 'src/common/db/prisma/prisma.service';
 import { RedisService } from 'src/common/db/redis/redis.service';
 import request from 'supertest';
 
-const testUser = {
+export const testUser = {
   email: 'Test@gmail.com',
   username: 'amir',
   password: 'P@ssw0rd',
 };
 
-export const registerUser = async (app: INestApplication, verifyEmail = false) => {
-  await request(app.getHttpServer()).post('/auth/register').send(testUser).expect(201);
+export const registerUser = async (app: INestApplication, userData = testUser, verifyEmail = false) => {
+  await request(app.getHttpServer()).post('/auth/register').send(userData).expect(201);
 
   if (verifyEmail) {
     const redis = app.get(RedisService);
 
-    const token = await redis.verificationTokenService.get(testUser.email.toLowerCase());
+    const token = await redis.verificationTokenService.get(userData.email.toLowerCase());
     await request(app.getHttpServer())
       .post('/auth/verify-email')
-      .send({ email: testUser.email, token })
+      .send({ email: userData.email, token })
       .expect(201);
   }
 };
-export const getAccessTokenCookie = async (app: INestApplication) => {
-  await registerUser(app, true); //Register and verify
+export const getAccessTokenCookie = async (app: INestApplication, userData = testUser) => {
+  await registerUser(app, userData, true); //Register and verify
 
   const res = await request(app.getHttpServer())
     .post('/auth/login')
-    .send({ email: testUser.email, password: testUser.password })
+    .send({ email: userData.email, password: userData.password })
     .expect(201);
   return res.headers['set-cookie'][0].split(';')[0];
 };
@@ -220,7 +220,7 @@ describe('Auth (int)', () => {
     expect(secondSentAt).toBe(firstSentAt);
   });
   it('/auth/login should login verified user', async () => {
-    await registerUser(app, true); //Register and verify
+    await registerUser(app, undefined, true); //Register and verify
 
     const res = await request(app.getHttpServer())
       .post('/auth/login')
@@ -240,7 +240,7 @@ describe('Auth (int)', () => {
       .expect(403);
   });
   it('/auth/login should not login with wrong password', async () => {
-    await registerUser(app, true); //Register and verify
+    await registerUser(app, undefined, true); //Register and verify
 
     await request(app.getHttpServer())
       .post('/auth/login')
