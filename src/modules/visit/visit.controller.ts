@@ -14,7 +14,7 @@ export class VisitController {
 
   @ApiOperation({ summary: 'Get all visits for a specific URL by URL ID' })
   @ApiParam({ name: 'urlId', description: 'The ID of the URL', type: String })
-  @Get(':urlId')
+  @Get('single/:urlId')
   async getAllVisitsByUrlId(
     @Query() query: PaginationDto,
     @Param('urlId') urlId: string,
