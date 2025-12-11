@@ -63,9 +63,8 @@ describe('Redirect (int)', () => {
     const visitsBefore = await prisma.urlVisit.findMany({ where: { urlId } });
     expect(visitsBefore.length).toBe(0);
 
-    const res = await request(app.getHttpServer()).get(`/${shortCode}`);
+    const res = await request(app.getHttpServer()).get(`/${shortCode}`).expect(302);
 
-    expect(res.status).toBe(302);
     expect(res.header.location).toBe(originalUrl);
 
     const visitsAfter = await prisma.urlVisit.findMany({ where: { urlId } });

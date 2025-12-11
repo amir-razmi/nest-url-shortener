@@ -11,7 +11,7 @@ import { loginAdmin, loginUser, testUser } from 'test/helpers/auth.helper';
 import request from 'supertest';
 import { generateRandomString } from 'src/common/utils/gen-rand-string.util';
 
-describe('UserController (Integration)', () => {
+describe('User (Int)', () => {
   let prisma: PrismaService;
   let redis: RedisService;
   let app: INestApplication;
