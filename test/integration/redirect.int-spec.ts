@@ -50,7 +50,7 @@ describe('Redirect (int)', () => {
     const originalUrl = 'https://nestjs.com';
     const shortCode = generateRandomString(6);
 
-    await prisma.url.create({
+    const { id: urlId } = await prisma.url.create({
       data: {
         originalUrl,
         shortCode,
@@ -60,10 +60,17 @@ describe('Redirect (int)', () => {
       },
     });
 
+    const visitsBefore = await prisma.urlVisit.findMany({ where: { urlId } });
+    expect(visitsBefore.length).toBe(0);
+
     const res = await request(app.getHttpServer()).get(`/${shortCode}`);
 
     expect(res.status).toBe(302);
     expect(res.header.location).toBe(originalUrl);
+
+    const visitsAfter = await prisma.urlVisit.findMany({ where: { urlId } });
+    expect(visitsAfter.length).toBe(1);
+    expect(visitsAfter[0].urlId).toBe(urlId);
   });
   it('should return 404 if short URL does not exist', async () => {
     const shortCode = generateRandomString(6);
