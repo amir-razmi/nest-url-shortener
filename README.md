@@ -120,6 +120,55 @@ cp .example-docker.env .env
    The application will be accessible at `http://localhost:5000` (or configured port).
 
 
+## 🧪 Integration Testing
+This project includes full integration tests that run against real MongoDB and Redis services using the dedicated `docker-compose.test.yaml` file.
+
+Tests interact with the actual NestJS application instance, database, and cache layer — providing production‑like correctness.
+
+### 📁 Test Environment
+Integration tests run using a lightweight environment:
+
+  - MongoDB (container)
+  - Redis (container)
+  - Prisma (connected to the test Mongo instance)
+  - Jest (with experimental VM modules for ES modules support)
+
+These services are isolated from your development and production environment.
+
+### ▶️ Running Integration Tests
+1. Start/Reset the Test Databases
+Before running tests, you must ensure the test database stack is running and Prisma schema is applied:
+```bash
+pnpm db:restart
+```
+
+This script performs:
+
+- Shut down any previous test containers
+- Start docker-compose.test.yaml in detached mode
+- Wait a few seconds for MongoDB/Redis to become ready
+- Run prisma db push to sync the schema
+
+2. Run the Integration Test Suite
+Use:
+```bash
+pnpm test:int
+```
+
+This command:
+
+- Runs Jest using the jest-int.config.json config
+- ses --experimental-vm-modules for ES module compatibility
+- Runs tests serially (-i) to avoid DB race conditions
+- Disables Jest’s cache to ensure fresh results
+
+### 🔍 Notes
+Integration tests are located in: `/test/integration`
+
+- Each test uses the real NestJS application and real database connections.
+- Make sure the test containers are fully up before running test:int (the db:restart script handles this for you).
+- The test environment is completely isolated, so running tests will not modify development or production databases.
+
 ## 📌 Usage
 
 1. **Register a User**: POST to `/auth/register` with email and password. Verify via the sent email.
