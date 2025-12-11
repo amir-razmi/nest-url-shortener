@@ -19,7 +19,7 @@ export class VisitService {
     const osName = userAgent.getOS().name || null;
     const deviceType = userAgent.getDevice().type || 'desktop';
 
-    await this.prisma.visit.create({
+    await this.prisma.urlVisit.create({
       data: {
         urlId,
         ipAddress,
@@ -39,26 +39,26 @@ export class VisitService {
     if (url.userId !== userId) throw new UnauthorizedException('Unauthorized');
 
     const where = { urlId };
-    const visits = await this.prisma.visit.findMany({
+    const visits = await this.prisma.urlVisit.findMany({
       where,
       take: limit,
       skip: (page - 1) * limit,
       orderBy: { visitedAt: 'desc' },
     });
 
-    const totalVisits = await this.prisma.visit.count({ where });
+    const totalVisits = await this.prisma.urlVisit.count({ where });
     const totalPages = Math.ceil(totalVisits / limit);
 
     return { visits, totalVisits, totalPages };
   }
   async getAllVisits({ page, limit }: PaginationDto) {
-    const visits = await this.prisma.visit.findMany({
+    const visits = await this.prisma.urlVisit.findMany({
       take: limit,
       skip: (page - 1) * limit,
       orderBy: { visitedAt: 'desc' },
     });
 
-    const totalVisits = await this.prisma.visit.count();
+    const totalVisits = await this.prisma.urlVisit.count();
     const totalPages = Math.ceil(totalVisits / limit);
 
     return { visits, totalVisits, totalPages };

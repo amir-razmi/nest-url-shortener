@@ -34,12 +34,12 @@ model Url {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  visits Visit[]
+  urlVisits UrlVisit[]
 
   @@index([userId])
 }
 
-model Visit {
+model UrlVisit {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   urlId      String   @db.ObjectId
   Url        Url      @relation(fields: [urlId], references: [id], onDelete: Cascade)
