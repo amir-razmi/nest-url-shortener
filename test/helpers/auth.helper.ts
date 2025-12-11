@@ -5,7 +5,7 @@ import { RedisService } from 'src/common/db/redis/redis.service';
 import request from 'supertest';
 
 export const testUser = {
-  email: 'Test@gmail.com',
+  email: 'test@gmail.com',
   username: 'amir',
   password: 'P@ssw0rd',
 };
