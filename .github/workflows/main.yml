@@ -1,0 +1,15 @@
+name: First Workflow # Name for the workflow
+on: workflow_dispatch # Trigger the workflow manually
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v3
+      - name: Run Test DBs
+        run: npm run db:restart
+      - name: Sleep
+        run: |
+          sleep 10
+      - name: Run Integration tests
+        run: npm run test:int
