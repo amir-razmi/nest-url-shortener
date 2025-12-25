@@ -15,6 +15,14 @@ export class RedisService implements OnModuleDestroy {
       password: env.REDIS_PASSWORD,
     });
 
+    this.client.on('connect', () => {
+      console.log('Connected to Redis successfully');
+    });
+
+    this.client.on('error', (err) => {
+      console.error('Redis connection error:', err);
+    });
+
     this.verificationTokenService = new RedisVerificationTokenService(this.client);
   }
 

@@ -12,6 +12,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   async onModuleInit() {
     await this.$connect();
+    console.log('Prisma Connected to the MongoDB successfully');
     this.setupCaching();
   }
   async onModuleDestroy() {
