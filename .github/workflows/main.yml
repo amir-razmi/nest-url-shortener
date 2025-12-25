@@ -32,6 +32,12 @@ jobs:
         run: |
           cp .example-test.env .test.env
 
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
       - name: Run Test DBs
         run: npm run db:restart
 
@@ -44,12 +50,6 @@ jobs:
         with:
           files: node_modules
           key: node-modules-${{hashFiles('**/pnpm-lock.yaml')}}
-
-      - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Install dependencies
-        run: pnpm install
 
       - name: Prisma generate
         run: npx prisma generate
