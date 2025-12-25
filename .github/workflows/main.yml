@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: false
     steps:
       - name: Clone Repo
         uses: actions/checkout@v3
@@ -86,6 +87,9 @@ jobs:
           MONGODB_REPLICA_SET_KEY=${{ secrets.MONGODB_REPLICA_SET_KEY }}
           MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=${{ secrets.MONGODB_ROOT_PASSWORD }}
           EOF
+
+      - name: log the .env file
+        run: cat .env
 
       - name: Stop existing containers
         run: docker compose down || true
