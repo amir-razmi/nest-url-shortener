@@ -68,10 +68,10 @@ jobs:
         run: |
           cat > .env << EOF
           NODE_ENV=${{ env.NODE_ENV }}
-          PORT=${{ env.PORT }}
-          CORS=${{ env.CORS }}
-          REDIS_HOST=${{ env.REDIS_HOST }}
-          REDIS_PORT=${{ env.REDIS_PORT }}
+          PORT=${{ secrets.PORT }}
+          CORS=${{ secrets.CORS }}
+          REDIS_HOST=${{ secrets.REDIS_HOST }}
+          REDIS_PORT=${{ secrets.REDIS_PORT }}
           MONGODB_DATABASE=${{ env.MONGODB_DATABASE }}
           MONGODB_USERNAME=${{ env.MONGODB_USERNAME }}
           MONGODB_ROOT_USER=${{ env.MONGODB_INITIAL_PRIMARY_ROOT_USER }}
