@@ -19,7 +19,7 @@ services:
       - '${PORT}:${PORT}'
 
   mongodb-primary:
-    image: bitnami/mongodb:6.0.4-debian-11-r11
+    image: bitnami/mongodb:latest
     restart: always
     environment:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-primary
@@ -43,7 +43,7 @@ services:
       retries: 12
 
   mongodb-secondary:
-    image: bitnami/mongodb:6.0.4-debian-11-r11
+    image: bitnami/mongodb:latest
     restart: always
     depends_on:
       - mongodb-primary
@@ -65,7 +65,7 @@ services:
       retries: 12
 
   mongodb-arbiter:
-    image: bitnami/mongodb:6.0.4-debian-11-r11
+    image: bitnami/mongodb:latest
     restart: always
     depends_on:
       - mongodb-primary
@@ -87,7 +87,7 @@ services:
       retries: 12
 
   redis:
-    image: 'bitnami/redis:7.4.2'
+    image: 'bitnami/redis:latest'
     environment:
       - REDIS_PASSWORD
     healthcheck:
