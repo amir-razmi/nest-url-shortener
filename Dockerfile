@@ -1,6 +1,6 @@
 FROM node:20-alpine AS base
 
-RUN npm install -g pnpm prisma
+RUN npm install -g pnpm prisma@6.19.1
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
