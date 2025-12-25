@@ -31,9 +31,6 @@ jobs:
       - name: Prepare test environment variables
         run: |
           cp .example-test.env .env
-        
-      - name: log .env file
-        run: cat .env
 
       - name: Install pnpm
         run: npm install -g pnpm
@@ -48,7 +45,7 @@ jobs:
         run: pnpm install
 
       - name: Run Test DBs
-        run: npm run db:restart
+        run: docker compose -f docker-compose.test.yaml up -d
 
       - name: Sleep
         run: |
@@ -56,6 +53,9 @@ jobs:
 
       - name: Prisma generate
         run: npx prisma generate
+
+      - name: Prisma db push
+        run: npx prisma db push
 
       - name: Run Integration tests
         run: npm run test:int
