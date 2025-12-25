@@ -107,7 +107,7 @@ jobs:
       - name: Run health check
         run: |
           sleep 10
-          curl -f http://localhost:${{ vars.PORT }} || echo "Health check endpoint not available"
+          curl -f http://localhost:${{ vars.PORT }}/api-doc || echo "Health check endpoint not available"
         continue-on-error: true
 
       - name: Show logs on failure
