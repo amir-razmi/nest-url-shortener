@@ -9,6 +9,11 @@ export class RedisService implements OnModuleDestroy {
   verificationTokenService: RedisVerificationTokenService;
 
   constructor() {
+    console.log({
+      host: env.REDIS_HOST,
+      port: env.REDIS_PORT,
+      password: env.REDIS_PASSWORD,
+    });
     this.client = new Redis({
       host: env.REDIS_HOST,
       port: env.REDIS_PORT,
