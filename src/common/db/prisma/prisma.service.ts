@@ -5,7 +5,7 @@ import { env } from 'src/env';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor(private redis: RedisService) {
-    super();
+    super({});
   }
 
   extendedPrisma: PrismaClient;
