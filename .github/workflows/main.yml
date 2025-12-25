@@ -31,6 +31,9 @@ jobs:
       - name: Prepare test environment variables
         run: |
           cp .example-test.env .env
+        
+      - name: log .env file
+        run: cat .env
 
       - name: Install pnpm
         run: npm install -g pnpm
