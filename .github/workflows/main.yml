@@ -30,7 +30,7 @@ jobs:
 
       - name: Prepare test environment variables
         run: |
-          cp .example-test.env .test.env
+          cp .example-test.env .env
 
       - name: Install pnpm
         run: npm install -g pnpm
@@ -53,9 +53,6 @@ jobs:
 
       - name: Prisma generate
         run: npx prisma generate
-
-      - name: Prisma db push
-        run: npx prisma db push
 
       - name: Run Integration tests
         run: npm run test:int
