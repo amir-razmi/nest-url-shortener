@@ -51,6 +51,7 @@ This project is part of my portfolio as a **Node.js Backend Developer**, showcas
 - [JWT](https://jwt.io/)
 - [Swagger](https://swagger.io/)
 - [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
+- [GitHub Actions (CI/CD)](https://docs.github.com/en/actions)
 
 
 ## 📦 Prerequisites
@@ -168,6 +169,36 @@ Integration tests are located in: `/test/integration`
 - Each test uses the real NestJS application and real database connections.
 - Make sure the test containers are fully up before running test:int (the db:restart script handles this for you).
 - The test environment is completely isolated, so running tests will not modify development or production databases.
+
+## 🤖 GitHub Actions CI/CD
+Automated CI/CD pipeline with full integration testing and production deployment.
+
+### 🔍 CI Pipeline (runs on every push/PR)
+Triggers: push to main/dev, pull_request to main/develop, manual workflow_dispatch
+
+- Test Job:
+- Sets up Node.js v20 and pnpm
+  - Prepares test environment variables
+  - Starts test MongoDB/Redis via docker-compose.test.yaml
+  - Runs prisma generate and prisma db push
+  - Executes full integration tests (pnpm test:int:ci)
+  - Cleans up test containers
+
+### 🚀 CD Pipeline (production deployment)
+
+- Triggers: Manual workflow_dispatch OR push to main
+- Deployment Job (runs after successful tests):
+  - Creates production .env from GitHub Secrets/Variables
+  - Stops existing Docker containers
+  - Builds and starts full stack (docker compose up -d --build)
+  - Waits for services to be healthy
+  - Runs health check against /api-doc
+  - Shows logs on failure and cleans up
+
+### 🔧 Configuration
+- **Repository Secrets**: `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`, `JWT_SECRET`, `REDIS_PASSWORD`, `DATABASE_URL`, `MONGODB_PASSWORD`, `MONGODB_ROOT_PASSWORD`, `MONGODB_REPLICA_SET_KEY`
+- **Repository Variables**: `NODE_ENV`, `PORT`, `CORS`, `REDIS_HOST`, `REDIS_PORT`, `MONGODB_DATABASE`, `MONGODB_USERNAME`, `MONGODB_REPLICA_SET_NAME`, `MONGODB_INITIAL_PRIMARY_ROOT_USER`
+- **Workflow file**: `.github/workflows/ci-cd.yml`
 
 ## 📌 Usage
 
