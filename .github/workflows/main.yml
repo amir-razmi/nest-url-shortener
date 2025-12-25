@@ -48,7 +48,7 @@ jobs:
         run: npx prisma db push
 
       - name: Run Integration tests
-        run: pnpm test:int
+        run: pnpm test:int:ci
 
       - name: Stop test databases
         if: always()

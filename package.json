@@ -19,7 +19,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "db:restart": "docker compose -f docker-compose.test.yaml down && docker compose -f docker-compose.test.yaml up -d && sleep 5 && npx prisma db push",
-    "test:int": "NODE_OPTIONS='--experimental-vm-modules' jest -i --no-cache --watchAll --config jest-int.config.json"
+    "test:int": "NODE_OPTIONS='--experimental-vm-modules' jest -i --no-cache --watchAll --config jest-int.config.json",
+    "test:int:ci": "NODE_OPTIONS='--experimental-vm-modules' jest -i --no-cache --config jest-int.config.json -runInBand --forceExit --detectOpenHandles"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
