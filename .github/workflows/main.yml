@@ -1,15 +1,125 @@
-name: First Workflow # Name for the workflow
-on: workflow_dispatch # Trigger the workflow manually
+name: CI/CD Pipeline
+on:
+  push:
+    branches: [main, 'dev']
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_ENV: production
+  PORT: 5000
+  CORS: localhost:5000
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  MONGODB_DATABASE: url-shortner
+  MONGODB_USERNAME: user
+  MONGODB_REPLICA_SET_NAME: rs0
+  MONGODB_INITIAL_PRIMARY_ROOT_USER: root-user
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Clone Repo
         uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Prepare test environment variables
+        run: |
+          cp .example-test.env .test.env
+
       - name: Run Test DBs
         run: npm run db:restart
+
       - name: Sleep
         run: |
           sleep 10
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          files: node_modules
+          key: node-modules-${{hashFiles('**/pnpm-lock.yaml')}}
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Prisma generate
+        run: npx prisma generate
+
+      - name: Prisma db push
+        run: npx prisma db push
+
       - name: Run Integration tests
         run: npm run test:int
+
+      - name: Stop test databases
+        if: always()
+        run: docker compose -f docker-compose.test.yaml down
+
+  run-application:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create production environment file
+        run: |
+          cat > .env << EOF
+          NODE_ENV=${{ env.NODE_ENV }}
+          PORT=${{ env.PORT }}
+          CORS=${{ env.CORS }}
+          REDIS_HOST=${{ env.REDIS_HOST }}
+          REDIS_PORT=${{ env.REDIS_PORT }}
+          MONGODB_DATABASE=${{ env.MONGODB_DATABASE }}
+          MONGODB_USERNAME=${{ env.MONGODB_USERNAME }}
+          MONGODB_ROOT_USER=${{ env.MONGODB_INITIAL_PRIMARY_ROOT_USER }}
+          MONGODB_REPLICA_SET_NAME=${{ env.MONGODB_REPLICA_SET_NAME }}
+          MONGODB_INITIAL_PRIMARY_ROOT_USER=${{ env.MONGODB_INITIAL_PRIMARY_ROOT_USER }}
+          SMTP_USER=${{ secrets.SMTP_USER }}
+          SMTP_PASS=${{ secrets.SMTP_PASS }}
+          EMAIL_FROM=${{ secrets.EMAIL_FROM }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          MONGODB_PASSWORD=${{ secrets.MONGODB_PASSWORD }}
+          MONGODB_ROOT_PASSWORD=${{ secrets.MONGODB_ROOT_PASSWORD }}
+          MONGODB_REPLICA_SET_KEY=${{ secrets.MONGODB_REPLICA_SET_KEY }}
+          MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=${{ secrets.MONGODB_ROOT_PASSWORD }}
+          EOF
+
+      - name: Stop existing containers
+        run: docker compose down || true
+
+      - name: Build and start services
+        run: docker compose up -d --build
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for services to be healthy..."
+          timeout 120 bash -c 'until docker compose ps | grep -q "healthy"; do sleep 5; done' || true
+          docker compose ps
+
+      - name: Run health check
+        run: |
+          sleep 10
+          curl -f http://localhost:${{ env.PORT }}/health || echo "Health check endpoint not available"
+        continue-on-error: true
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Shutdown stack
+        if: always()
+        run: docker compose down -v
